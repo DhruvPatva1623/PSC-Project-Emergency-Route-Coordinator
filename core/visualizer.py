@@ -76,7 +76,7 @@ def render_trend_curve(response_times: list, save_file: str = "data/performance_
     smooth_y = np.polyval(polynomial_weights, smooth_x)
     ax.plot(smooth_x, smooth_y, color='#fbbf24', linestyle='--', linewidth=2, label='Polynomial Response Curve')
 
-    ax.set_title("Emergency Response Dispatch Curve (UNIT-III)", color="#f8fafc", fontsize=12, fontweight='bold', pad=10)
+    ax.set_title("Fleet Dispatch Response Benchmark & Trend", color="#f8fafc", fontsize=12, fontweight='bold', pad=10)
     ax.set_xlabel("Incident Sequence", color="#94a3b8", fontsize=10)
     ax.set_ylabel("Response Time (Minutes)", color="#94a3b8", fontsize=10)
     ax.set_xticks(x_indices)
