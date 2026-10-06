@@ -1,16 +1,20 @@
 """
 gui.py
 ======
-Desktop Tkinter GUI for Emergency Route and Help Coordinator.
-Matches the exact classic UI layout from the course project:
-1. Report Emergency
-2. Find Emergency Route
-3. View Available Help
-4. Assign Help
-5. View Emergency Records
-6. Start Emergency Monitoring
-7. Show Emergency Map (Turtle)
-8. Exit
+TOPIC USED:
+- Graphical User Interface (Tkinter GUI):
+    * Main window (tk.Tk), Modal dialogs (tk.Toplevel, grab_set)
+    * Form inputs (tk.Entry, ttk.Combobox, tk.Button, tk.Label, tk.Text)
+    * Alert popups & feedback (messagebox.showinfo, messagebox.showerror)
+- Event-Driven Programming: Callback bindings and form submit handlers
+- Concurrency / Multithreading: threading.Thread for asynchronous background monitoring
+- Integration with Core Algorithms: Calling Dijkstra routing, Turtle animation, Regex validation, and File I/O
+
+WHERE IT CONNECTS:
+- Serves as the primary Desktop User Interface for citizens and dispatch operators.
+- Directly invokes 'core/validator.py' for phone checks and text logging.
+- Directly invokes 'core/router.py' for finding optimal paths and nearest hospitals.
+- Directly launches 'core/turtle_visualizer.py' for interactive graphical road simulation.
 """
 
 import os
@@ -25,8 +29,7 @@ from core.router import (
     UrbanCorridorGraph,
     filter_idle_fleet,
     locate_nearest_medical_center,
-    extract_waypoint_positions,
-    fetch_openstreetmap_route
+    extract_waypoint_positions
 )
 from core.validator import check_phone_format, append_record_to_file, fetch_all_records
 from core.visualizer import compute_fleet_statistics, render_trend_curve
@@ -35,6 +38,10 @@ from run import build_ahmedabad_corridor_graph, initialize_environment
 
 
 class EmergencyCoordinatorApp:
+    """
+    TOPIC: Tkinter GUI Application Architecture
+    Coordinates the 8 main actions of the emergency response system.
+    """
     def __init__(self, root):
         self.root = root
         self.root.title("Emergency Route and Help Coordinator (Educational Simulation)")
@@ -51,6 +58,7 @@ class EmergencyCoordinatorApp:
         self._build_main_menu()
 
     def _build_main_menu(self):
+        """Builds the main desktop menu with 8 action buttons."""
         # Header Frame
         header_frame = tk.Frame(self.root, bg="#f0f0f0")
         header_frame.pack(pady=20)
@@ -102,7 +110,10 @@ class EmergencyCoordinatorApp:
             btn.pack(pady=5)
 
     def open_report_emergency_window(self):
-        """Opens 'Report Emergency' dialog matching the user screenshot."""
+        """
+        TOPIC: Tkinter Modal Dialogs & Form Input
+        Opens the emergency distress registration window.
+        """
         report_win = tk.Toplevel(self.root)
         report_win.title("Report Emergency")
         report_win.geometry("400x380")
@@ -113,31 +124,31 @@ class EmergencyCoordinatorApp:
         content_frame = tk.Frame(report_win, bg="#f0f0f0", padx=20, pady=15)
         content_frame.pack(fill="both", expand=True)
 
-        # Name
+        # Name Entry
         tk.Label(content_frame, text="Name", font=("Arial", 10), bg="#f0f0f0", anchor="w").pack(fill="x")
         name_entry = tk.Entry(content_frame, font=("Arial", 10), relief="groove", bd=2)
         name_entry.insert(0, "dhruv")
         name_entry.pack(fill="x", pady=(2, 10))
 
-        # Phone Number
+        # Phone Number Entry
         tk.Label(content_frame, text="Phone Number (10 digits)", font=("Arial", 10), bg="#f0f0f0", anchor="w").pack(fill="x")
         phone_entry = tk.Entry(content_frame, font=("Arial", 10), relief="groove", bd=2)
         phone_entry.insert(0, "9685633462")
         phone_entry.pack(fill="x", pady=(2, 10))
 
-        # Current Location
+        # Current Location Entry
         tk.Label(content_frame, text="Current Location", font=("Arial", 10), bg="#f0f0f0", anchor="w").pack(fill="x")
         location_entry = tk.Entry(content_frame, font=("Arial", 10), relief="groove", bd=2)
         location_entry.insert(0, "ghodasar")
         location_entry.pack(fill="x", pady=(2, 10))
 
-        # Destination / Hospital
+        # Destination Entry
         tk.Label(content_frame, text="Destination/Hospital", font=("Arial", 10), bg="#f0f0f0", anchor="w").pack(fill="x")
         dest_entry = tk.Entry(content_frame, font=("Arial", 10), relief="groove", bd=2)
         dest_entry.insert(0, "hospital")
         dest_entry.pack(fill="x", pady=(2, 10))
 
-        # Emergency Type
+        # Emergency Type Dropdown
         tk.Label(content_frame, text="Emergency Type", font=("Arial", 10), bg="#f0f0f0", anchor="w").pack(fill="x")
         type_var = tk.StringVar(value="Crime")
         type_combo = ttk.Combobox(
@@ -156,7 +167,7 @@ class EmergencyCoordinatorApp:
             dest = dest_entry.get().strip() or "Hospital"
             etype = type_var.get()
 
-            # Validation
+            # Regex Input Validation
             if not check_phone_format(phone):
                 messagebox.showerror(
                     "Validation Error",
@@ -168,10 +179,10 @@ class EmergencyCoordinatorApp:
             self.emergency_counter += 1
             priority = "High" if etype in ["Crime", "Medical", "Fire"] else "Medium"
 
-            # Save to text records
+            # File I/O Persistence
             append_record_to_file(tag_id, name, phone, etype, priority, loc)
 
-            # Store in session
+            # Store in session state
             node_keys = list(self.graph.vertices.keys())
             dest_node = random.choice(node_keys[1:4])
             self.latest_emergency = {
@@ -187,7 +198,7 @@ class EmergencyCoordinatorApp:
 
             report_win.destroy()
 
-            # Popup matching user screenshot
+            # Confirmation Alert
             messagebox.showinfo(
                 "Emergency Reported",
                 f"Emergency {tag_id} reported.\nPriority: {priority}"
@@ -206,7 +217,10 @@ class EmergencyCoordinatorApp:
         submit_btn.pack(pady=5)
 
     def find_emergency_route(self):
-        """Calculates optimal shortest path corridor using Dijkstra engine."""
+        """
+        TOPIC: Dijkstra Shortest Path Invocation
+        Finds and presents the calculated shortest path route corridor.
+        """
         dest_node = self.latest_emergency["node_key"] if self.latest_emergency else "N2"
         start_node = "N1"
 
@@ -215,7 +229,7 @@ class EmergencyCoordinatorApp:
         dest_name = self.graph.vertices[dest_node]["label"]
 
         info_msg = (
-            f"📍 Route Plan for Emergency Incident:\n"
+            f"Route Plan for Emergency Incident:\n"
             f"-----------------------------------------\n"
             f"• Origin Hub    : {self.graph.vertices[start_node]['label']} ({start_node})\n"
             f"• Destination   : {dest_name} ({dest_node})\n"
@@ -227,7 +241,10 @@ class EmergencyCoordinatorApp:
         messagebox.showinfo("Emergency Route Found", info_msg)
 
     def view_available_help(self):
-        """Displays table of available rescue vehicles and hospital bed capacity."""
+        """
+        TOPIC: Fleet & Capacity Querying
+        Displays available rescue fleet and medical center capacities.
+        """
         help_win = tk.Toplevel(self.root)
         help_win.title("Available Emergency Help & Fleet")
         help_win.geometry("540x360")
@@ -235,7 +252,7 @@ class EmergencyCoordinatorApp:
 
         tk.Label(
             help_win, 
-            text="🚑 Emergency Fleet & Medical Centers", 
+            text="Emergency Fleet & Medical Centers", 
             font=("Arial", 12, "bold"), 
             bg="#ffffff", 
             fg="#0f172a"
@@ -263,7 +280,10 @@ class EmergencyCoordinatorApp:
         text_box.configure(state="disabled")
 
     def assign_help(self):
-        """Assigns nearest available vehicle and admits patient to hospital."""
+        """
+        TOPIC: Resource Allocation & Dispatch
+        Assigns the nearest available unit and updates vehicle/hospital status.
+        """
         if not self.latest_emergency:
             dest_node = "N2"
             hazard = "Medical"
@@ -291,7 +311,7 @@ class EmergencyCoordinatorApp:
             matched_hospital.admit_emergency_case()
 
         msg = (
-            f"✅ Help Assigned Successfully!\n\n"
+            f"Help Assigned Successfully!\n\n"
             f"• Assigned Vehicle : {assigned_unit.vehicle_id} ({assigned_unit.vehicle_type})\n"
             f"• Vehicle Station  : {assigned_unit.current_station}\n"
             f"• Target Location  : {self.graph.vertices[dest_node]['label']}\n"
@@ -300,7 +320,10 @@ class EmergencyCoordinatorApp:
         messagebox.showinfo("Help Assigned", msg)
 
     def view_emergency_records(self):
-        """Displays stored emergency log records from text storage."""
+        """
+        TOPIC: Persistent File Reading & Display
+        Reads and presents logged incidents from text storage.
+        """
         records = fetch_all_records()
         records_win = tk.Toplevel(self.root)
         records_win.title("Stored Emergency Records")
@@ -309,7 +332,7 @@ class EmergencyCoordinatorApp:
 
         tk.Label(
             records_win,
-            text="📁 Persistent Emergency Distress Logs (data/emergency_records.txt)",
+            text="Persistent Emergency Distress Logs (data/emergency_records.txt)",
             font=("Arial", 11, "bold"),
             bg="#ffffff"
         ).pack(pady=10)
@@ -325,7 +348,10 @@ class EmergencyCoordinatorApp:
         text_area.configure(state="disabled")
 
     def start_emergency_monitoring(self):
-        """Starts background monitoring simulation."""
+        """
+        TOPIC: Multithreading (threading.Thread)
+        Runs asynchronous background monitoring simulation.
+        """
         if self.monitoring_active:
             messagebox.showinfo("Monitoring", "Emergency monitoring is already running in background.")
             return
@@ -340,14 +366,17 @@ class EmergencyCoordinatorApp:
         threading.Thread(target=monitor_worker, daemon=True).start()
         messagebox.showinfo(
             "Emergency Monitoring",
-            "🟢 Emergency Monitoring System Started!\n\n"
+            "Emergency Monitoring System Started!\n\n"
             "Active Threads: 1\n"
             "Corridor Sensors: 9 Active Nodes\n"
             "Fleet Status: Real-Time Auto-Tracking Active"
         )
 
     def show_turtle_map(self):
-        """Launches Python Turtle Graphical Simulation."""
+        """
+        TOPIC: Python Turtle Simulator Integration
+        Launches the Turtle graphical simulation for the latest incident.
+        """
         dest_node = self.latest_emergency["node_key"] if self.latest_emergency else "N2"
         needed_type = "Ambulance"
         if self.latest_emergency and self.latest_emergency["type"] in ["Crime", "Police"]:

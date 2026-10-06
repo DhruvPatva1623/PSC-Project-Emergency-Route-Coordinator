@@ -1,10 +1,17 @@
 """
 core/visualizer.py
 ==================
-Visualization and Array Computing module.
-Demonstrates:
-- NumPy 1D and 2D Array computing for fleet response statistics
-- Matplotlib response time trend curve and benchmark plotting
+TOPIC USED:
+- Array Computing (NumPy):
+    * 1D Arrays: Vectorized Mean, Median, Standard Deviation (np.std), Min, Max
+    * 2D Arrays & Matrices: 2D column stacking (np.column_stack) for multi-dimensional speed/duration efficiency index
+- Curve Plotting (Matplotlib):
+    * Bar charts comparing actual dispatch duration vs. benchmark target
+    * Polynomial fitting (np.polyfit, np.polyval) to plot continuous response trend curves
+    * Figure styling, axes labels, legends, and saving to disk
+
+WHERE IT CONNECTS:
+- Connected to 'run.py' (Option 4) to output terminal analytics and generate 'data/performance_curve.png'.
 """
 
 import os
@@ -16,11 +23,13 @@ import matplotlib.pyplot as plt
 
 def compute_fleet_statistics(response_intervals: list) -> dict:
     """
-    Computes statistical evaluation using NumPy vectors and matrices.
+    TOPIC: NumPy 1D & 2D Vector/Matrix Computing
+    Calculates key statistical metrics across response intervals.
     """
     if not response_intervals:
         response_intervals = [7.5, 9.2, 5.8, 12.1, 8.4, 6.6, 10.5]
 
+    # NumPy 1D Array
     num_array = np.array(response_intervals, dtype=np.float64)
 
     mean_duration = float(np.mean(num_array))
@@ -29,6 +38,7 @@ def compute_fleet_statistics(response_intervals: list) -> dict:
     fastest_time = float(np.min(num_array))
     longest_time = float(np.max(num_array))
 
+    # NumPy 2D Matrix Computing: Combine duration with computed speed factor
     speed_vector = 60.0 / (num_array / 60.0 + 0.1)
     stats_matrix = np.column_stack((num_array, speed_vector))
     efficiency_index = float(np.mean(stats_matrix[:, 1]) / mean_duration)
@@ -46,7 +56,8 @@ def compute_fleet_statistics(response_intervals: list) -> dict:
 
 def render_trend_curve(response_times: list, save_file: str = "data/performance_curve.png") -> str:
     """
-    Plots polynomial trend curve of emergency response times using Matplotlib.
+    TOPIC: Matplotlib Curve Plotting & Polynomial Regression
+    Generates a response time chart and saves to PNG file.
     """
     os.makedirs(os.path.dirname(save_file), exist_ok=True)
     if not response_times or len(response_times) < 2:
@@ -66,6 +77,7 @@ def render_trend_curve(response_times: list, save_file: str = "data/performance_
     ax.bar(x_indices - bar_width/2, actual_values, bar_width, label='Actual Time (min)', color='#38bdf8', alpha=0.9)
     ax.bar(x_indices + bar_width/2, standard_target, bar_width, label='Target Benchmark (8 min)', color='#f43f5e', alpha=0.7)
 
+    # Polynomial Curve Fitting
     smooth_x = np.linspace(0, len(labels)-1, 50)
     polynomial_weights = np.polyfit(x_indices, actual_values, 2)
     smooth_y = np.polyval(polynomial_weights, smooth_x)

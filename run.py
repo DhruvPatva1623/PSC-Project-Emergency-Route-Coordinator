@@ -1,14 +1,17 @@
 """
 run.py
 ======
-Main Execution Script for Emergency Route & Help Coordinator.
-Pure Python Desktop Application:
-- Desktop Tkinter GUI (`gui.py`)
-- Python Turtle Graphical Corridor Animation (`core/turtle_visualizer.py`)
-- Dijkstra Shortest Path Engine (`core/router.py`)
-- Object-Oriented Entities (`core/entity.py`)
-- Regex Phone Validator & Text File Storage (`core/validator.py`)
-- NumPy Vector Statistics & Matplotlib Plotting (`core/visualizer.py`)
+TOPIC USED:
+- Modular Architecture & Integration: Orchestrates core modules (entity, router, validator, visualizer, turtle_visualizer)
+- CLI Control Flow & Loops: Infinite menu loop with conditional dispatch branching
+- Higher-Order Functions: Uses graph initialization, Dijkstra routing, and statistical routines
+
+WHERE IT CONNECTS:
+- Serves as the central entry point for executing the Emergency Route & Help Coordinator.
+- Option 1 connects to 'gui.py' to launch the Desktop Tkinter GUI window.
+- Option 2 connects to 'core/router.py' and 'core/turtle_visualizer.py' for terminal registration & graphical Turtle simulation.
+- Option 3 connects to 'core/validator.py' for reading logged incident files.
+- Option 4 connects to 'core/visualizer.py' for computing NumPy metrics and plotting Matplotlib response curves.
 """
 
 import os
@@ -96,21 +99,21 @@ def initialize_environment():
 def print_banner():
     print(r"""
 ======================================================================
-  🚨 EMERGENCY ROUTE & HELP COORDINATOR
-  Educational Simulation System
+  EMERGENCY ROUTE & HELP COORDINATOR
+  Pure Python Desktop Simulation System
 ======================================================================
     """)
 
 
 def handle_new_incident(graph, medical_centers, fleet, durations):
     """Processes new emergency dispatch request and animates via Turtle."""
-    print("\n--- 📝 Emergency Distress Registration ---")
+    print("\n--- Emergency Distress Registration ---")
     caller_name = input("Enter Citizen / Caller Name [e.g. Rahul]: ").strip() or "Rahul Sharma"
     phone_number = input("Enter 10-Digit Contact Phone [e.g. 9876543210]: ").strip() or "9876543210"
 
     # Regular Expression Validation
     if not check_phone_format(phone_number):
-        print("❌ Validation Error: Contact number must be 10 digits starting with 6-9.\n")
+        print("Validation Error: Contact number must be 10 digits starting with 6-9.\n")
         return
 
     print("\nAvailable Emergency Types: [1] Medical [2] Fire [3] Police")
@@ -128,19 +131,19 @@ def handle_new_incident(graph, medical_centers, fleet, durations):
     dest_info = graph.vertices[destination_node]
     dest_coords = dest_info["coords"]
 
-    # 1. Filter available units
+    # 1. Filter available units (Higher-order function: filter)
     available_units = filter_idle_fleet(fleet, vehicle_type)
     if not available_units:
         available_units = filter_idle_fleet(fleet)
 
     if not available_units:
-        print("❌ Warning: All emergency vehicles are currently dispatched!\n")
+        print("Warning: All emergency vehicles are currently dispatched!\n")
         return
 
     assigned_unit = available_units[0]
     assigned_unit.deploy_to_site()
 
-    # 2. Locate closest hospital
+    # 2. Locate closest hospital (Higher-order function: sorted with lambda)
     matched_center = locate_nearest_medical_center(dest_coords, medical_centers)
     if matched_center:
         matched_center.admit_emergency_case()
@@ -149,24 +152,24 @@ def handle_new_incident(graph, medical_centers, fleet, durations):
     eta_mins, total_km, path_nodes = graph.find_fastest_corridor(assigned_unit.current_station, destination_node)
     durations.append(eta_mins)
 
-    # 4. Save record to persistent storage
+    # 4. Save record to persistent storage (File I/O append)
     tag_id = f"SOS-{random.randint(100, 999)}"
     append_record_to_file(tag_id, caller_name, phone_number, hazard_type, "High", dest_info["label"])
 
     # Summary Output
     print("\n" + "=" * 55)
-    print(f"✅ EMERGENCY DISPATCH CONFIRMATION [{tag_id}]")
+    print(f"EMERGENCY DISPATCH CONFIRMATION [{tag_id}]")
     print("=" * 55)
-    print(f"📍 Location Spot  : {dest_info['label']} ({destination_node})")
-    print(f"🚑 Assigned Unit  : {assigned_unit.vehicle_id} ({assigned_unit.vehicle_type})")
-    print(f"🏥 Medical Center : {matched_center.title} ({matched_center.available_beds} beds left)")
-    print(f"⏱️ Estimated ETA   : {eta_mins} minutes")
-    print(f"🛣️ Driving Distance: {total_km} km")
-    print(f"🌐 Route Corridors: {' ➔ '.join(path_nodes)}")
+    print(f"Location Spot   : {dest_info['label']} ({destination_node})")
+    print(f"Assigned Unit   : {assigned_unit.vehicle_id} ({assigned_unit.vehicle_type})")
+    print(f"Medical Center  : {matched_center.title} ({matched_center.available_beds} beds left)")
+    print(f"Estimated ETA   : {eta_mins} minutes")
+    print(f"Driving Distance: {total_km} km")
+    print(f"Route Corridors : {' ➔ '.join(path_nodes)}")
     print("=" * 55)
 
     # 5. Launch Turtle Simulator Animation
-    print("\n🐢 Launching Python Turtle Graphical Simulator...")
+    print("\nLaunching Python Turtle Graphical Simulator...")
     draw_turtle_simulation(
         graph, 
         assigned_unit.current_station, 
@@ -183,7 +186,7 @@ def display_analytics_summary(durations):
     """Displays NumPy statistical analytics and renders Matplotlib curve."""
     metrics = compute_fleet_statistics(durations)
     print("\n" + "=" * 50)
-    print("📊 FLEET RESPONSE ANALYTICS (NumPy)")
+    print("FLEET RESPONSE ANALYTICS (NumPy)")
     print("=" * 50)
     print(f"• Total Incident Dispatches : {metrics['count']}")
     print(f"• Mean Response Time        : {metrics['mean_min']} minutes")
@@ -194,14 +197,14 @@ def display_analytics_summary(durations):
     print("=" * 50)
 
     chart_file = render_trend_curve(durations)
-    print(f"✅ Generated Matplotlib performance curve at: {chart_file}\n")
+    print(f"Generated Matplotlib performance curve at: {chart_file}\n")
 
 
 def view_stored_logs():
     """Reads and displays stored records from plain text file."""
     records = fetch_all_records()
     print("\n" + "=" * 50)
-    print("📁 STORED EMERGENCY RECORDS (data/emergency_records.txt)")
+    print("STORED EMERGENCY RECORDS (data/emergency_records.txt)")
     print("=" * 50)
     if not records:
         print("No records logged yet.")
@@ -217,17 +220,17 @@ def main():
 
     while True:
         print("------------------------------------------------------")
-        print("1. 🖥️ Launch Desktop Tkinter Window (Classic GUI)")
-        print("2. 🚨 Report Emergency & Run Turtle Simulator")
-        print("3. 📁 View Stored Incident Logs (Text File)")
-        print("4. 📊 View NumPy Analytics & Matplotlib Trend Curve")
-        print("5. ❌ Exit Coordinator")
+        print("1. Launch Desktop Tkinter Window (Classic GUI)")
+        print("2. Report Emergency & Run Turtle Simulator")
+        print("3. View Stored Incident Logs (Text File)")
+        print("4. View NumPy Analytics & Matplotlib Trend Curve")
+        print("5. Exit Coordinator")
         print("------------------------------------------------------")
 
         user_input = input("Enter your selection (1-5): ").strip()
 
         if user_input == "1":
-            print("\n🖥️ Opening Desktop Tkinter Window...")
+            print("\nOpening Desktop Tkinter Window...")
             from gui import launch_gui
             launch_gui()
         elif user_input == "2":
@@ -240,7 +243,7 @@ def main():
             print("\nShutting down Emergency Coordinator. Have a safe day!\n")
             break
         else:
-            print("❌ Invalid selection. Please enter 1 to 5.\n")
+            print("Invalid selection. Please enter 1 to 5.\n")
 
 
 if __name__ == "__main__":

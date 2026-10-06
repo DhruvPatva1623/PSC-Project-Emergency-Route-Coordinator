@@ -1,12 +1,14 @@
 """
 core/entity.py
 ==============
-Object-Oriented Programming (OOP) module defining core emergency entities.
-Demonstrates:
-- Classes and Objects
-- Encapsulation & Information Hiding (Protected fields & @property setters)
-- Structured Objects (Tuples for coordinates, Sets for capabilities)
-(Syllabus: UNIT-I Structured Objects & UNIT-II Object-Oriented Programming)
+TOPIC USED:
+- Object-Oriented Programming (OOP): Classes, Object Instantiation
+- Encapsulation & Data Hiding: Private attributes (_available_beds, _operational_status) and @property getters/setters
+- Structured Data Types: Tuples for geographic coordinates (lat, lng), Sets for facility tags
+
+WHERE IT CONNECTS:
+- Connected to 'gui.py' & 'run.py' for emergency alert tickets, fleet tracking, and hospital capacity management.
+- Connected to 'core/router.py' for filtering idle vehicles and matching hospital locations.
 """
 
 from datetime import datetime
@@ -14,17 +16,17 @@ from datetime import datetime
 
 class MedicalCenter:
     """
-    Represents a Hospital or Trauma Center.
-    Demonstrates Encapsulation: bed capacity cannot be manipulated directly without validation.
+    TOPIC: OOP Encapsulation
+    Represents a hospital / emergency medical center with bed capacity validation.
     """
     def __init__(self, center_id: str, title: str, latitude: float, longitude: float, available_beds: int):
         self.center_id = center_id
         self.title = title
-        # [UNIT-I: Tuple for geographic coordinates]
+        # Structured Type: Tuple for coordinate immutability
         self.position = (latitude, longitude)
-        # [UNIT-II: Encapsulated attribute]
+        # Encapsulated attribute: Protected bed count
         self._available_beds = available_beds
-        # [UNIT-I: Set for distinct medical facilities]
+        # Structured Type: Set for distinct medical facilities
         self.facilities = {"Emergency Ward", "ICU", "Burn Care", "Surgical Theater"}
 
     @property
@@ -34,14 +36,14 @@ class MedicalCenter:
 
     @available_beds.setter
     def available_beds(self, count: int) -> None:
-        """Setter with validation logic."""
+        """Setter with validation to prevent negative values."""
         if count >= 0:
             self._available_beds = count
         else:
             raise ValueError("Bed count cannot be negative.")
 
     def admit_emergency_case(self) -> bool:
-        """Reduces one available bed upon patient admission."""
+        """Decrements bed count upon admitting a patient."""
         if self._available_beds > 0:
             self._available_beds -= 1
             return True
@@ -50,7 +52,8 @@ class MedicalCenter:
 
 class RescueVehicle:
     """
-    Represents an emergency response vehicle (Ambulance, Fire Engine, Police Cruiser).
+    TOPIC: OOP Encapsulation & State Management
+    Represents an emergency rescue unit (Ambulance, Fire Engine, Police Cruiser).
     """
     def __init__(self, vehicle_id: str, vehicle_type: str, current_station: str, 
                  latitude: float, longitude: float, cruising_speed_kmh: float = 60.0):
@@ -60,8 +63,8 @@ class RescueVehicle:
         self.latitude = latitude
         self.longitude = longitude
         self.cruising_speed_kmh = cruising_speed_kmh
-        # [UNIT-II: Encapsulated operational state]
-        self._operational_status = "AVAILABLE"  # "AVAILABLE", "DISPATCHED"
+        # Encapsulated state: AVAILABLE or DISPATCHED
+        self._operational_status = "AVAILABLE"
 
     @property
     def operational_status(self) -> str:
@@ -76,6 +79,7 @@ class RescueVehicle:
 
 class EmergencyAlert:
     """
+    TOPIC: OOP Structured Incident Model
     Represents an incoming emergency distress call ticket.
     """
     def __init__(self, alert_id: str, citizen_name: str, phone_number: str, 

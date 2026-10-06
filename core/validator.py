@@ -1,11 +1,13 @@
 """
 core/validator.py
 =================
-Input Validation and Persistent File Logging module.
-Demonstrates:
-- Regular Expressions (re module)
-- File Handling: Writing and Reading text logs
-(Syllabus: UNIT-I File I/O & UNIT-II Regular Expressions)
+TOPIC USED:
+- Regular Expressions (re module): Pattern matching for 10-digit phone validation (^[6-9]\\d{9}$) and tag formats
+- File Handling (I/O): Plain text append ('a') and read ('r') file operations with context managers (with open)
+
+WHERE IT CONNECTS:
+- Connected to 'gui.py' & 'run.py' to validate distress caller phone inputs before dispatch.
+- Connected to 'gui.py' & 'run.py' for reading and displaying stored incident records from 'data/emergency_records.txt'.
 """
 
 import re
@@ -17,9 +19,8 @@ STORAGE_PATH = os.path.join("data", "emergency_records.txt")
 
 def check_phone_format(phone: str) -> bool:
     """
-    [UNIT-II: Regular Expressions]
-    Validates Indian standard 10-digit emergency contact numbers.
-    Pattern: Starts with 6, 7, 8, or 9 followed by 9 digits.
+    TOPIC: Regular Expressions (Regex)
+    Validates standard 10-digit mobile contact numbers (starts with 6-9).
     """
     regex_pattern = r"^[6-9]\d{9}$"
     return bool(re.match(regex_pattern, phone.strip()))
@@ -27,18 +28,18 @@ def check_phone_format(phone: str) -> bool:
 
 def check_emergency_tag(tag: str) -> bool:
     """
-    [UNIT-II: Regular Expressions]
-    Validates incident ticket tags (e.g., 'SOS-101', 'MED-402', 'FIRE-999').
+    TOPIC: Regular Expressions (Regex)
+    Validates ticket tag formats (e.g., 'SOS-101', 'E-1').
     """
-    regex_pattern = r"^[A-Z]{3,4}-\d{3,4}$"
+    regex_pattern = r"^[A-Z]{1,4}-\d{1,4}$"
     return bool(re.match(regex_pattern, tag.strip().upper()))
 
 
 def append_record_to_file(alert_id: str, citizen: str, phone: str, 
                           hazard: str, priority: str, location: str) -> None:
     """
-    [UNIT-I: File Handling - Write]
-    Appends a formatted incident record line to plain text file storage.
+    TOPIC: File Handling (Write/Append Mode)
+    Appends a new emergency record to the persistent log text file.
     """
     os.makedirs("data", exist_ok=True)
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -53,8 +54,8 @@ def append_record_to_file(alert_id: str, citizen: str, phone: str,
 
 def fetch_all_records() -> list:
     """
-    [UNIT-I: File Handling - Read]
-    Reads stored incident records line by line from the text file.
+    TOPIC: File Handling (Read Mode)
+    Reads and returns all logged emergency records line by line.
     """
     if not os.path.exists(STORAGE_PATH):
         return []
