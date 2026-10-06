@@ -2,7 +2,13 @@
 run.py
 ======
 Main Execution Script for Emergency Route & Help Coordinator.
-Integrates all syllabus units (Unit-I, Unit-II, Unit-III) with OpenStreetMap API and Leaflet Maps.
+Pure Python Desktop Application:
+- Desktop Tkinter GUI (`gui.py`)
+- Python Turtle Graphical Corridor Animation (`core/turtle_visualizer.py`)
+- Dijkstra Shortest Path Engine (`core/router.py`)
+- Object-Oriented Entities (`core/entity.py`)
+- Regex Phone Validator & Text File Storage (`core/validator.py`)
+- NumPy Vector Statistics & Matplotlib Plotting (`core/visualizer.py`)
 """
 
 import os
@@ -20,11 +26,11 @@ from core.router import (
     UrbanCorridorGraph, 
     filter_idle_fleet, 
     locate_nearest_medical_center, 
-    extract_waypoint_positions,
-    fetch_openstreetmap_route
+    extract_waypoint_positions
 )
 from core.validator import check_phone_format, append_record_to_file, fetch_all_records
-from core.visualizer import compute_fleet_statistics, render_trend_curve, generate_interactive_map_html
+from core.visualizer import compute_fleet_statistics, render_trend_curve
+from core.turtle_visualizer import draw_turtle_simulation
 
 
 def build_ahmedabad_corridor_graph() -> UrbanCorridorGraph:
@@ -97,12 +103,12 @@ def print_banner():
 
 
 def handle_new_incident(graph, medical_centers, fleet, durations):
-    """Processes new emergency dispatch request."""
+    """Processes new emergency dispatch request and animates via Turtle."""
     print("\n--- 📝 Emergency Distress Registration ---")
     caller_name = input("Enter Citizen / Caller Name [e.g. Rahul]: ").strip() or "Rahul Sharma"
     phone_number = input("Enter 10-Digit Contact Phone [e.g. 9876543210]: ").strip() or "9876543210"
 
-    # [UNIT-II: Regular Expression Validation]
+    # Regular Expression Validation
     if not check_phone_format(phone_number):
         print("❌ Validation Error: Contact number must be 10 digits starting with 6-9.\n")
         return
@@ -122,7 +128,7 @@ def handle_new_incident(graph, medical_centers, fleet, durations):
     dest_info = graph.vertices[destination_node]
     dest_coords = dest_info["coords"]
 
-    # 1. Filter available units [UNIT-I: filter & lambda]
+    # 1. Filter available units
     available_units = filter_idle_fleet(fleet, vehicle_type)
     if not available_units:
         available_units = filter_idle_fleet(fleet)
@@ -134,30 +140,16 @@ def handle_new_incident(graph, medical_centers, fleet, durations):
     assigned_unit = available_units[0]
     assigned_unit.deploy_to_site()
 
-    # 2. Locate closest hospital [UNIT-I: sorted & lambda]
+    # 2. Locate closest hospital
     matched_center = locate_nearest_medical_center(dest_coords, medical_centers)
     if matched_center:
         matched_center.admit_emergency_case()
 
-    # 3. Try Live OpenStreetMap (OSRM) API Routing first [UNIT-II: Networking]
-    origin_coords = (assigned_unit.latitude, assigned_unit.longitude)
-    print("\n📡 Fetching real-time driving corridor from OpenStreetMap API...")
-    osm_time, osm_dist, osm_coords = fetch_openstreetmap_route(origin_coords, dest_coords)
-
-    if osm_time and osm_coords:
-        eta_mins = osm_time
-        total_km = osm_dist
-        route_points = osm_coords
-        routing_source = "OpenStreetMap OSRM Live API"
-    else:
-        # Fallback to internal Dijkstra Graph Algorithm
-        eta_mins, total_km, path = graph.find_fastest_corridor(assigned_unit.current_station, destination_node)
-        route_points = extract_waypoint_positions(path, graph)
-        routing_source = "Dijkstra Shortest Path Engine"
-
+    # 3. Compute Dijkstra Shortest Route
+    eta_mins, total_km, path_nodes = graph.find_fastest_corridor(assigned_unit.current_station, destination_node)
     durations.append(eta_mins)
 
-    # 4. Save record to persistent storage [UNIT-I: File I/O]
+    # 4. Save record to persistent storage
     tag_id = f"SOS-{random.randint(100, 999)}"
     append_record_to_file(tag_id, caller_name, phone_number, hazard_type, "High", dest_info["label"])
 
@@ -170,34 +162,28 @@ def handle_new_incident(graph, medical_centers, fleet, durations):
     print(f"🏥 Medical Center : {matched_center.title} ({matched_center.available_beds} beds left)")
     print(f"⏱️ Estimated ETA   : {eta_mins} minutes")
     print(f"🛣️ Driving Distance: {total_km} km")
-    print(f"🌐 Routing Source : {routing_source}")
+    print(f"🌐 Route Corridors: {' ➔ '.join(path_nodes)}")
     print("=" * 55)
 
-    # 5. Visualizer Choice (Turtle / Leaflet)
-    print("\nVisual Display Options:")
-    print("  [1] 🐢 Python Turtle Graphical Animation (Standard Desktop Window)")
-    print("  [2] 🗺️ Interactive Leaflet Web Browser Map")
-    vis_choice = input("Choose Visualizer (1/2) [Default 1]: ").strip() or "1"
-
-    if vis_choice == "1":
-        from core.turtle_visualizer import draw_turtle_simulation
-        _, _, path_nodes = graph.find_fastest_corridor(assigned_unit.current_station, destination_node)
-        draw_turtle_simulation(graph, assigned_unit.current_station, destination_node, 
-                               path_nodes, assigned_unit, matched_center, eta_mins, total_km)
-    else:
-        print("\n🗺️ Generating interactive Leaflet visual map...")
-        map_path = generate_interactive_map_html(
-            dest_info["label"], dest_coords, assigned_unit, matched_center,
-            route_points, eta_mins, total_km
-        )
-        print(f"✅ Opened Leaflet Map in default browser: {map_path}\n")
+    # 5. Launch Turtle Simulator Animation
+    print("\n🐢 Launching Python Turtle Graphical Simulator...")
+    draw_turtle_simulation(
+        graph, 
+        assigned_unit.current_station, 
+        destination_node, 
+        path_nodes, 
+        assigned_unit, 
+        matched_center, 
+        eta_mins, 
+        total_km
+    )
 
 
 def display_analytics_summary(durations):
-    """[UNIT-III] Displays NumPy statistical analytics and renders Matplotlib curve."""
+    """Displays NumPy statistical analytics and renders Matplotlib curve."""
     metrics = compute_fleet_statistics(durations)
     print("\n" + "=" * 50)
-    print("📊 NUMPY RESPONSE ANALYTICS (UNIT-III)")
+    print("📊 FLEET RESPONSE ANALYTICS (NumPy)")
     print("=" * 50)
     print(f"• Total Incident Dispatches : {metrics['count']}")
     print(f"• Mean Response Time        : {metrics['mean_min']} minutes")
@@ -208,11 +194,11 @@ def display_analytics_summary(durations):
     print("=" * 50)
 
     chart_file = render_trend_curve(durations)
-    print(f"✅ Generated Matplotlib polynomial response curve at: {chart_file}\n")
+    print(f"✅ Generated Matplotlib performance curve at: {chart_file}\n")
 
 
 def view_stored_logs():
-    """[UNIT-I] Reads and displays stored records from plain text file."""
+    """Reads and displays stored records from plain text file."""
     records = fetch_all_records()
     print("\n" + "=" * 50)
     print("📁 STORED EMERGENCY RECORDS (data/emergency_records.txt)")
@@ -231,18 +217,17 @@ def main():
 
     while True:
         print("------------------------------------------------------")
-        print("1. 🖥️ Launch Tkinter Desktop Window (Classic GUI)")
-        print("2. 🚨 Report Emergency (Turtle Simulator / Leaflet Map)")
-        print("3. 📁 View Stored Incident Logs (Text File Storage)")
+        print("1. 🖥️ Launch Desktop Tkinter Window (Classic GUI)")
+        print("2. 🚨 Report Emergency & Run Turtle Simulator")
+        print("3. 📁 View Stored Incident Logs (Text File)")
         print("4. 📊 View NumPy Analytics & Matplotlib Trend Curve")
-        print("5. 🌐 Launch Localhost Web Dashboard (http://localhost:8000)")
-        print("6. ❌ Exit Coordinator")
+        print("5. ❌ Exit Coordinator")
         print("------------------------------------------------------")
 
-        user_input = input("Enter your selection (1-6): ").strip()
+        user_input = input("Enter your selection (1-5): ").strip()
 
         if user_input == "1":
-            print("\n🖥️ Launching Tkinter Desktop Application...")
+            print("\n🖥️ Opening Desktop Tkinter Window...")
             from gui import launch_gui
             launch_gui()
         elif user_input == "2":
@@ -252,17 +237,10 @@ def main():
         elif user_input == "4":
             display_analytics_summary(durations)
         elif user_input == "5":
-            print("\n🌐 Starting Localhost Web Application on http://localhost:8000 ...")
-            import subprocess
-            subprocess.Popen(["python", "server.py"])
-            import webbrowser
-            webbrowser.open("http://localhost:8000")
-            print("✅ Server active! Opened http://localhost:8000 in your browser.\n")
-        elif user_input == "6":
             print("\nShutting down Emergency Coordinator. Have a safe day!\n")
             break
         else:
-            print("❌ Invalid selection. Please enter 1 to 6.\n")
+            print("❌ Invalid selection. Please enter 1 to 5.\n")
 
 
 if __name__ == "__main__":
