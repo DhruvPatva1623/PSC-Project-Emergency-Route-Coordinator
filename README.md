@@ -1,32 +1,32 @@
-# 🚨 Emergency Route & Help Coordinator
+# Emergency Route & Help Coordinator
 
 A pure Python desktop project that coordinates emergency dispatches using **Tkinter Desktop GUI**, **Python Turtle Graphics Simulation**, **Dijkstra's Shortest Path Algorithm**, **Regex Validation**, **File I/O Logging**, and **NumPy/Matplotlib Analytics**.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 psc_project_antigravity/
-├── gui.py                      # 🖥️ Tkinter Desktop GUI (8 Action Buttons + Distress Form)
-├── run.py                      # 🚀 Primary Entry Point / Terminal Coordinator
+├── gui.py           # Tkinter Desktop GUI (8 Action Buttons + Distress Form)
+├── run.py           # Primary Entry Point / Terminal Coordinator
 ├── core/
-│   ├── entity.py               # OOP Classes (MedicalCenter, RescueVehicle, EmergencyAlert)
-│   ├── router.py               # Dijkstra Algorithm, Graph Corridors & Higher-Order Functions
-│   ├── turtle_visualizer.py    # Python Turtle Graphics Screen & Route Animation
-│   ├── validator.py            # Phone Regex Validation & Persistent File Logging
-│   └── visualizer.py           # NumPy Statistical Computing & Matplotlib Curves
+│  ├── entity.py        # OOP Classes (MedicalCenter, RescueVehicle, EmergencyAlert)
+│  ├── router.py        # Dijkstra Algorithm, Graph Corridors & Higher-Order Functions
+│  ├── turtle_visualizer.py  # Python Turtle Graphics Screen & Route Animation
+│  ├── validator.py      # Phone Regex Validation & Persistent File Logging
+│  └── visualizer.py      # NumPy Statistical Computing & Matplotlib Curves
 │
 ├── data/
-│   ├── emergency_records.txt   # Persistent distress incident logs
-│   └── performance_curve.png   # Matplotlib response benchmark curve
+│  ├── emergency_records.txt  # Persistent distress incident logs
+│  └── performance_curve.png  # Matplotlib response benchmark curve
 │
-└── README.md                   # Documentation
+└── README.md          # Documentation
 ```
 
 ---
 
-## 🖥️ How to Run
+## How to Run
 
 ### 1. Run Desktop Tkinter GUI (Recommended)
 ```bash
@@ -50,7 +50,7 @@ Provides an interactive menu to launch the Tkinter GUI, run Turtle simulations d
 
 ---
 
-## 🐍 Pure Python Syllabus Mapping
+## Pure Python Syllabus Mapping
 
 | Module | Core Concepts Used |
 | :--- | :--- |

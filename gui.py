@@ -225,7 +225,7 @@ class EmergencyCoordinatorApp:
         start_node = "N1"
 
         eta, dist, path = self.graph.find_fastest_corridor(start_node, dest_node)
-        path_str = " ➔ ".join(path)
+        path_str = " -> ".join(path)
         dest_name = self.graph.vertices[dest_node]["label"]
 
         info_msg = (

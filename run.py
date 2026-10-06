@@ -98,10 +98,10 @@ def initialize_environment():
 
 def print_banner():
     print(r"""
-======================================================================
+
   EMERGENCY ROUTE & HELP COORDINATOR
   Pure Python Desktop Simulation System
-======================================================================
+
     """)
 
 
@@ -165,7 +165,7 @@ def handle_new_incident(graph, medical_centers, fleet, durations):
     print(f"Medical Center  : {matched_center.title} ({matched_center.available_beds} beds left)")
     print(f"Estimated ETA   : {eta_mins} minutes")
     print(f"Driving Distance: {total_km} km")
-    print(f"Route Corridors : {' ➔ '.join(path_nodes)}")
+    print(f"Route Corridors : {' -> '.join(path_nodes)}")
     print("=" * 55)
 
     # 5. Launch Turtle Simulator Animation
